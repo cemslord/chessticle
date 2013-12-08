@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Chessticle Examples</title>
+		<link rel="stylesheet" type="text/css" href="../chessticle.css"/>
+	</head>
+	<body>
+		<div id="pgn"></div>
+
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+		<script src="../jquery.chessticle.js"></script>
+		<script>
+			(function() {
+				$.get('pgn/spassky-fischer.pgn', function(pgn) {
+					$('#pgn').chessticle({
+						pgn: pgn
+					});
+				});
+			}());
+		</script>
+	</body>
+</html>
