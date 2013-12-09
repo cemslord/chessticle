@@ -1,5 +1,9 @@
 (function(window, document, $) {
 
+	function parsePgn(pgn) {
+
+	}
+
 	function Chessticle($element, options) {
 		this.$element = $element;
 		this.type = 'fen' in options ? 'fen' : 'pgn';
