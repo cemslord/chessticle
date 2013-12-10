@@ -80,7 +80,7 @@ Lexer.prototype = {
 			throw new Error('Expected numeric annotation glyph at ' + this.index);
 		}
 
-		return nag;
+		return nag.substring(1);
 	},
 
 	sanitizeInput: function(input) {

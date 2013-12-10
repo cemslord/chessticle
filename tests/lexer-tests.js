@@ -137,7 +137,7 @@ describe('Lexer', function() {
 		var tokens = lexer.lex('$20');
 		tokens.should.have.length(1);
 		tokens[0].should.have.property('name', 'nag');
-		tokens[0].should.have.property('value', '$20');
+		tokens[0].should.have.property('value', '20');
 	});
 
 	it('should handle escape on first line', function() {
@@ -158,7 +158,7 @@ describe('Lexer', function() {
 		var tokens = lexer.lex('$23489');
 		tokens.should.have.length(1);
 		tokens[0].should.have.property('name', 'nag');
-		tokens[0].should.have.property('value', '$23489');
+		tokens[0].should.have.property('value', '23489');
 	});
 
 	it('should blow up on invalid NAG', function() {
