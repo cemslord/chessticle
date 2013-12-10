@@ -147,9 +147,8 @@ Parser.prototype = {
 			result.san = tokens[i + 1].value;
 		}
 
-		//validate move
 		//this probably totally works and is totally maintainable forever
-		var sanRegex = /(?:([PNBRQK])?([a-h]|[1-8]|[a-h][1-8])?(x)?([a-h][1-8])(?:=([A-Z]))?|(^O-O(?:-O)?))(\+\+?|#)?/,
+		var sanRegex = /^(?:([PNBRQK])?([a-h]|[1-8]|[a-h][1-8])?(x)?([a-h][1-8])(?:=([A-Z]))?|(^O-O(?:-O)?))(\+\+?|#)?$/,
 			match = sanRegex.exec(result.san);
 
 		if (!match) {
