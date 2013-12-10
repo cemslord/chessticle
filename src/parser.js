@@ -56,34 +56,6 @@
  *   PlyCount: integer
  */
 
-function PgnToken(type, value) {
-	this.type = type;
-	this.value = value;
-}
-
-function PgnLexer() {
-	this.index = -1;
-	this.input = '';
-	this.tokens = [];
-}
-
-PgnLexer.prototype = {
-	reset: function() {
-
-	},
-
-	lex: function(input) {
-		this.reset();
-		this.input = input || '';
-		var current;
-		while (current = this.input.charAt(++this.index)) {
-
-		}
-
-		return this.tokens;
-	}
-};
-
 function PgnParser(lexer) {
 	this.lexer = lexer || new PgnLexer();
 }
