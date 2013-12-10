@@ -139,9 +139,7 @@ Lexer.prototype = {
 						if (this.index === 0 || this.input.charAt(this.index - 1) === '\n') {
 							this.tokens.push(createToken('escape', this.readTo('\n', false).substring(1)));
 						}
-					} else if (/\s/.test(current)) {
-						//whitespace
-					} else {
+					} else if (!/\s/.test(current)) {
 						throw new Error(
 							'Invalid input character "' + current +
 							'" (code point: ' + current.charCodeAt(0) + ') at ' + this.index
