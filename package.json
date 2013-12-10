@@ -21,6 +21,6 @@
 
 	"scripts": {
 		"start": "node_modules/.bin/serve -p 15694 .",
-		"test": "node_modules/.bin/mocha -R spec tests"
+		"test": "node_modules/.bin/mocha -R dot tests"
 	}
 }

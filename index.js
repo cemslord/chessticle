@@ -1,3 +1,4 @@
 module.exports = {
-	Lexer: require('./src/lexer')
+	Lexer: require('./src/lexer'),
+	Parser: require('./src/parser')
 };
