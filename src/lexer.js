@@ -40,7 +40,7 @@ Lexer.prototype = {
 			return null;
 		}
 
-		this.index += match[0].length;
+		this.index += match[0].length - 1;
 		return match && match[0];
 	},
 
@@ -101,7 +101,7 @@ Lexer.prototype = {
 					this.tokens.push(createToken('commentary', this.readTo('\n', false).substring(1)));
 					break;
 				case '.':
-					this.tokens.push(createToken('period', current));
+					this.tokens.push(createToken('periods', this.readRegex(/\.+/, true)));
 					break;
 				case '<':
 				case '>':
@@ -124,9 +124,6 @@ Lexer.prototype = {
 					break;
 				case '$':
 					this.tokens.push(createToken('nag', this.readNag()));
-					break;
-				case '-':
-					this.tokens.push(createToken('hyphen', current));
 					break;
 				case '*':
 					this.tokens.push(createToken('asterisk', current));

@@ -24,11 +24,18 @@ describe('Lexer', function() {
 		tokens[0].should.have.property('value', '42');
 	});
 
-	it('should handle period', function() {
+	it('should handle single period', function() {
 		var tokens = lexer.lex('.');
 		tokens.should.have.length(1);
-		tokens[0].should.have.property('name', 'period');
+		tokens[0].should.have.property('name', 'periods');
 		tokens[0].should.have.property('value', '.');
+	});
+
+	it('should handle multiple periods', function() {
+		var tokens = lexer.lex('........');
+		tokens.should.have.length(1);
+		tokens[0].should.have.property('name', 'periods');
+		tokens[0].should.have.property('value', '........');
 	});
 
 	it('should handle asterisk', function() {
@@ -163,5 +170,28 @@ describe('Lexer', function() {
 		(function() { lexer.lex(invalidChar); })
 			.should
 			.throwError('Invalid input character "' + invalidChar + '" (code point: 1) at 0');
+	});
+
+	it('should handle movetext', function() {
+		var tokens = lexer.lex('1. e4 e5 2. Nf3 Nf6 1-0');
+		tokens.should.have.length(9);
+		tokens[0].should.have.property('name', 'integer');
+		tokens[0].should.have.property('value', '1');
+		tokens[1].should.have.property('name', 'periods');
+		tokens[1].should.have.property('value', '.');
+		tokens[2].should.have.property('name', 'symbol');
+		tokens[2].should.have.property('value', 'e4');
+		tokens[3].should.have.property('name', 'symbol');
+		tokens[3].should.have.property('value', 'e5');
+		tokens[4].should.have.property('name', 'integer');
+		tokens[4].should.have.property('value', '2');
+		tokens[5].should.have.property('name', 'periods');
+		tokens[5].should.have.property('value', '.');
+		tokens[6].should.have.property('name', 'symbol');
+		tokens[6].should.have.property('value', 'Nf3');
+		tokens[7].should.have.property('name', 'symbol');
+		tokens[7].should.have.property('value', 'Nf6');
+		tokens[8].should.have.property('name', 'symbol');
+		tokens[8].should.have.property('value', '1-0');
 	});
 });
