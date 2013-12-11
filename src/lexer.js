@@ -133,7 +133,7 @@ Lexer.prototype = {
 					break;
 				default:
 					if (/[a-zA-Z0-9]/.test(current)) {
-						var symbol = this.readRegex(/[a-zA-Z0-9][-\w+#=:\/]*/, true);
+						var symbol = this.readRegex(/[a-zA-Z0-9][-\w+#=:\/!?]*/, true);
 						this.tokens.push(createToken(/^\d+$/.test(symbol) ? 'integer' : 'symbol', symbol));
 					} else if (current === '%') {
 						if (this.index === 0 || this.input.charAt(this.index - 1) === '\n') {

@@ -161,6 +161,13 @@ describe('Lexer', function() {
 		tokens[0].should.have.property('value', '23489');
 	});
 
+	it('should handle traditional NAG', function() {
+		var tokens = lexer.lex('d4!?');
+		tokens.should.have.length(1);
+		tokens[0].should.have.property('name', 'symbol');
+		tokens[0].should.have.property('value', 'd4!?');
+	});
+
 	it('should handle draws', function() {
 		var tokens = lexer.lex('1/2-1/2');
 		tokens.should.have.length(1);
