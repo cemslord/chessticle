@@ -267,13 +267,9 @@ Parser.prototype = {
 				break;
 			}
 
-			if (next.name !== 'integer') {
-				throw new Error('Expected token "integer"');
-			}
-
-			next = tokens[++i];
-			if (next && next.name === 'periods') {
-				next = tokens[++i];
+			if (next.name === 'integer' || next.name === 'periods') {
+				//TODO this allows bogus things like "1. 2. 3. 4. d4"
+				continue;
 			}
 
 			var halfMove = this.parseHalfMove(tokens, i);

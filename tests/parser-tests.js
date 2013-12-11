@@ -712,7 +712,27 @@ describe('Parser', function() {
 			result.moves[0].variations[0].moves[0].should.have.property('target', 'd3');
 		});
 
-		it.skip('should handle nested variations', function() {});
+		it('should handle variation with multiple moves', function() {
+			var tokens = [
+				{ name: 'integer', value: '1' },
+				{ name: 'symbol', value: 'd4' },
+				{ name: 'open-paren' },
+				{ name: 'integer', value: '1' },
+				{ name: 'symbol', value: 'd3' },
+				{ name: 'symbol', value: 'd6' },
+				{ name: 'integer', value: '2' },
+				{ name: 'symbol', value: 'd4' },
+				{ name: 'close-paren' }
+			];
+			var result = parser.parse(tokens);
+			result.moves.should.have.length(1);
+			result.moves[0].should.have.property('target', 'd4');
+			result.moves[0].variations.should.have.length(1);
+			result.moves[0].variations[0].moves.should.have.length(3);
+			result.moves[0].variations[0].moves[0].should.have.property('target', 'd3');
+			result.moves[0].variations[0].moves[1].should.have.property('target', 'd6');
+			result.moves[0].variations[0].moves[2].should.have.property('target', 'd4');
+		});
 
 		it('should handle multiple variations', function() {
 			var tokens = [
@@ -737,22 +757,33 @@ describe('Parser', function() {
 			result.moves[0].variations[1].moves[0].should.have.property('target', 'f3');
 		});
 
-		it.skip('should handle variation with multiple moves', function() {
+		it('should handle nested variations', function() {
 			var tokens = [
 				{ name: 'integer', value: '1' },
 				{ name: 'symbol', value: 'd4' },
 				{ name: 'open-paren' },
 				{ name: 'integer', value: '1' },
 				{ name: 'symbol', value: 'd3' },
-				{ name: 'symbol', value: 'Nf6' },
-				{ name: 'close-paren' }
+				{ name: 'symbol', value: 'd5' },
+				{ name: 'open-paren' },
+				{ name: 'integer', value: '1' },
+				{ name: 'periods', value: '...' },
+				{ name: 'symbol', value: 'd6' },
+				{ name: 'close-paren' },
+				{ name: 'close-paren' },
+				{ name: 'symbol', value: 'Nf6' }
 			];
 			var result = parser.parse(tokens);
-			result.moves.should.have.length(1);
+			result.moves.should.have.length(2);
 			result.moves[0].should.have.property('target', 'd4');
+			result.moves[1].should.have.property('target', 'f6');
 			result.moves[0].variations.should.have.length(1);
-			result.moves[0].variations[0].moves.should.have.length(1);
+			result.moves[0].variations[0].moves.should.have.length(2);
 			result.moves[0].variations[0].moves[0].should.have.property('target', 'd3');
+			result.moves[0].variations[0].moves[1].should.have.property('target', 'd5');
+			result.moves[0].variations[0].moves[1].variations.should.have.length(1);
+			result.moves[0].variations[0].moves[1].variations[0].moves.should.have.length(1);
+			result.moves[0].variations[0].moves[1].variations[0].moves[0].should.have.property('target', 'd6');
 		});
 	});
 
