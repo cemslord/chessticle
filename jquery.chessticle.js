@@ -1,22 +1,18 @@
 (function(window, document, $) {
 
-	function parsePgn(pgn) {
-
-	}
-
 	function Chessticle($element, options) {
 		this.$element = $element;
 		this.type = 'fen' in options ? 'fen' : 'pgn';
-		this.raw = options[this.type];
+		this.input = options[this.type];
 
-		if (!this.raw) {
+		if (!this.input) {
 			throw new Error('"fen" or "pgn" input is required');
 		}
 	}
 
 	Chessticle.prototype = {
 		render: function() {
-
+			
 		}
 	};
 
