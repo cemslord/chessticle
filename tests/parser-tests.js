@@ -93,6 +93,36 @@ describe('Parser', function() {
 			result.moves[3].should.have.property('target', 'c6');
 		});
 
+		describe('game termination markers', function() {
+			[ '1-0', '0-1', '1/2-1/2' ].forEach(function(gtm) {
+				it(gtm, function() {
+					var tokens = [
+						{ name: 'integer', value: '1' },
+						{ name: 'periods', value: '.' },
+						{ name: 'symbol', value: 'd4' },
+						{ name: 'symbol', value: gtm }
+					];
+					var result = parser.parse(tokens);
+					result.moves.should.have.length(1);
+					result.moves[0].should.have.property('target', 'd4');
+					result.should.have.property('result', gtm);
+				});
+			});
+
+			it('*', function() {
+				var tokens = [
+					{ name: 'integer', value: '1' },
+					{ name: 'periods', value: '.' },
+					{ name: 'symbol', value: 'd4' },
+					{ name: 'asterisk', value: '*' }
+				];
+				var result = parser.parse(tokens);
+				result.moves.should.have.length(1);
+				result.moves[0].should.have.property('target', 'd4');
+				result.should.have.property('result', '*');
+			});
+		});
+
 		describe('commentary', function() {
 			it('should handle commentary before 1st move', function() {
 				var tokens = [

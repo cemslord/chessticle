@@ -94,10 +94,11 @@ Parser.prototype = {
 		var data = {
 			metadata: {},
 			commentary: '',
+			result: '*',
 			moves: []
 		};
 
-		var token, i = -1, result, noMoreTags = false, firstMoveCommentary = null;
+		var token, i = -1, result, noMoreTags = false;
 		while (token = tokens[++i]) {
 			switch (token.name) {
 				case 'open-bracket':
@@ -131,13 +132,18 @@ Parser.prototype = {
 				case 'escape':
 					break;
 				case 'symbol':
+				case 'asterisk':
 					if (!noMoreTags) {
 						throw new Error('Unexpected token: ' + token.name);
 					}
 
 					result = this.parseHalfMove(tokens, i);
 					i = result.index;
-					data.moves.push(result.move);
+					if (result.result) {
+						data.result = result.result;
+					} else {
+						data.moves.push(result.move);
+					}
 					break;
 				default:
 					throw new Error('Unrecognized token: ' + token.name);
@@ -159,9 +165,20 @@ Parser.prototype = {
 		};
 
 		var token = tokens[i];
-		if (!token || token.name !== 'symbol') {
-			throw new Error('Expected token "symbol"');
+		if (!token || (token.name !== 'symbol' && token.name !== 'asterisk')) {
+			throw new Error('Expected token "symbol" or "asterisk"');
 		}
+
+		//is it a game termination marker?
+		var gtm = [ '1-0', '0-1', '1/2-1/2' ];
+		if (gtm.indexOf(token.value) !== -1 || token.name === 'asterisk') {
+			//game termination marker
+			return {
+				index: i,
+				result: token.value
+			};
+		}
+
 		result.move.san = token.value;
 
 		//this probably totally works and is totally maintainable forever
