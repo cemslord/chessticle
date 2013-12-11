@@ -109,9 +109,6 @@ Parser.prototype = {
 					data.metadata[result.name] = result.value;
 					i = result.index;
 					break;
-				case 'escape':
-					//meh, don't care about escaped stuff
-					break;
 				case 'close-bracket':
 				case 'close-paren':
 					//shouldn't ever encounter one of these that wasn't
@@ -130,6 +127,7 @@ Parser.prototype = {
 					noMoreTags = true;
 					break;
 				case 'periods':
+				case 'escape':
 					break;
 				case 'open-paren':
 					//variation...

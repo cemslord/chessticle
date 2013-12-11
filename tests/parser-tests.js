@@ -14,6 +14,24 @@ describe('Parser', function() {
 		result.metadata.should.have.property('Foo', 'bar');
 	});
 
+	it('should ignore escaped text', function() {
+		var tokens = [
+			{ name: 'escape', value: 'asdf' }
+		];
+		var result = parser.parse(tokens);
+		result.metadata.should.be.empty;
+		result.moves.should.be.empty;
+	});
+
+	it('should ignore periods', function() {
+		var tokens = [
+			{ name: 'periods', value: '......' }
+		];
+		var result = parser.parse(tokens);
+		result.metadata.should.be.empty;
+		result.moves.should.be.empty;
+	});
+
 	describe('movetext', function() {
 		it('should handle nag after move', function() {
 			var tokens = [
