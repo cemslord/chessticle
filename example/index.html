@@ -2,7 +2,9 @@
 <html>
 	<head>
 		<title>Chessticle Examples</title>
-		<link rel="stylesheet" type="text/css" href="../chessticle.css"/>
+		<link rel="stylesheet" type="text/css" href="../static/chessticle.css"/>
+		<link rel="stylesheet" type="text/css" href="../static/alpha.ead-01.css"/>
+		<link rel="stylesheet" type="text/css" href="../static/alpha.ead-01_40.css"/>
 	</head>
 	<body>
 		<div id="pgn"></div>
@@ -14,7 +16,7 @@
 			(function() {
 				$.get('pgn/spassky-fischer.pgn', function(pgn) {
 					$('#pgn').chessticle({
-						pgn: pgn
+						input: pgn
 					});
 				});
 			}());

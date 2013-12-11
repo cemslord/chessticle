@@ -1,0 +1,23 @@
+.chessticle {
+	font-family: Arial, sans-serif;
+}
+.chessticle-board {
+	border-collapse: separate;
+	border-spacing: 1px;
+	background-color: fade(black, 80);
+	td {
+		position: relative;
+		padding: 2px;
+		&.chessticle-light-square {
+			background-color: #ded9ff;
+		}
+		&.chessticle-dark-square {
+			background-color: #8aa0ff;
+		}
+		.chessticle-piece {
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
+	}
+}
