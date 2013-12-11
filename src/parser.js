@@ -1,33 +1,6 @@
 // spec details: http://www6.chessclub.com/help/PGN-spec
 
 /**
- * commentary: ";" to end of line, or between "{" and "}"
- * escape: "%" on first column of line to the end of the line
- * tokens:
- *  string: delimited by double quotes (max length = 255), no newlines or TABs
- *  integer: \d+
- *  period: "." (move number indications)
- *  asterisk: "*" (game termination marker)
- *  bracket: "[" or "]" (tag pair delimiter)
- *  paren: "(" or ")" (delimiters for recursive annotation variations)
- *  reserved: "<" or ">"
- *  numeric annotation glyph: $ + integer, where integer is 0-255
- *  symbol: [a-zA-Z0-9][-\w+#=:]*
- *
- *  tag pairs: "[" + (ws) + tag_name + (ws) + string + (ws) + "]"
- *    tag_name: \w+
- *    string: ":" as a delimiter for multiple strings in one string value
- *  seven tag roster: Event, Site, Date, Round, White, Black, Result
- *    Date: [\d?]{4}\.[\d?]{2}\.[\d?]{2}
- *    Result: "0-1", "1-0", "1/2-1/2", "*"
- *  movetext: integer + "."*
- *  standard algebraic notation: ([PNBRQK]([a-h]|[1-8]|[a-h][1-8])?x?[a-h][1-8](=[NBRQ])?|O-O|O-O-O)(+|#)?
- *    shortest: two characters, e.g. "d4"
- *    longest: seven characters, e.g. Qa6xb7# or fxg1=Q+
- *  move suffix annotations: [!?]{,2}
- *  game termination marker: "1-0", "0-1", "1/2-1/2", "*"
- *
- * other tags:
  *   WhiteTitle, BlackTitle: "FM, "GM", "IM", "-", etc.
  *   WhiteElo, BlackElo: integer or "-"
  *   WhiteUSCF, BlackUSCF: integer or "-"
@@ -182,7 +155,7 @@ Parser.prototype = {
 		result.move.san = token.value;
 
 		//this probably totally works and is totally maintainable forever
-		var sanRegex = /^(?:([PNBRQK])?([a-h]|[1-8]|[a-h][1-8])?(x)?([a-h][1-8])(?:=([A-Z]))?|(^O-O(?:-O)?))(\+\+?|#)?$/,
+		var sanRegex = /^(?:([PNBRQK])?([a-h]|[1-8]|[a-h][1-8])?(x)?([a-h][1-8])(?:=([A-Z]))?|(^O-O(?:-O)?))(\+\+?|#)?([!?]{1,2})?$/,
 			match = sanRegex.exec(result.move.san);
 
 		if (!match) {
@@ -233,9 +206,18 @@ Parser.prototype = {
 
 		//is there a NAG?
 		var next = tokens[i + 1];
-		if (next && next.name === 'nag') {
+		if (match[8]) {
+			switch (match[8]) {
+				case '!':  result.move.nag = 1; break;
+				case '?':  result.move.nag = 2; break;
+				case '!!': result.move.nag = 3; break;
+				case '??': result.move.nag = 4; break;
+				case '!?': result.move.nag = 5; break;
+				case '?!': result.move.nag = 6; break;
+			}
+		} else if (next && next.name === 'nag') {
 			result.move.nag = Number(next.value);
-			if (result.move.nag > 255) {
+			if (isNaN(result.move.nag) || result.move.nag > 255) {
 				throw new Error('Invalid NAG value: ' + result.move.nag);
 			}
 			i++;

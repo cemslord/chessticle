@@ -33,24 +33,47 @@ describe('Parser', function() {
 	});
 
 	describe('movetext', function() {
-		it('should handle nag after move', function() {
-			var tokens = [
-				{ name: 'integer', value: '1' },
-				{ name: 'symbol', value: 'd4' },
-				{ name: 'nag', value: '1' }
-			];
-			var result = parser.parse(tokens);
-			result.moves.should.have.length(1);
-			result.moves[0].should.have.property('piece', null);
-			result.moves[0].should.have.property('origin', null);
-			result.moves[0].should.have.property('capturing', false);
-			result.moves[0].should.have.property('target', 'd4');
-			result.moves[0].should.have.property('promotion', null);
-			result.moves[0].should.have.property('kingSideCastle', false);
-			result.moves[0].should.have.property('queenSideCastle', false);
-			result.moves[0].should.have.property('check', false);
-			result.moves[0].should.have.property('checkmate', false);
-			result.moves[0].should.have.property('nag', 1);
+		describe('nags', function() {
+			it('should handle nag after move', function() {
+				var tokens = [
+					{ name: 'integer', value: '1' },
+					{ name: 'symbol', value: 'd4' },
+					{ name: 'nag', value: '1' }
+				];
+				var result = parser.parse(tokens);
+				result.moves.should.have.length(1);
+				result.moves[0].should.have.property('piece', null);
+				result.moves[0].should.have.property('origin', null);
+				result.moves[0].should.have.property('capturing', false);
+				result.moves[0].should.have.property('target', 'd4');
+				result.moves[0].should.have.property('promotion', null);
+				result.moves[0].should.have.property('kingSideCastle', false);
+				result.moves[0].should.have.property('queenSideCastle', false);
+				result.moves[0].should.have.property('check', false);
+				result.moves[0].should.have.property('checkmate', false);
+				result.moves[0].should.have.property('nag', 1);
+			});
+
+			[ '!', '?', '!!', '??', '!?', '?!' ].forEach(function(nag, i) {
+				it('should handle ' + nag + ' nag', function() {
+					var tokens = [
+						{ name: 'integer', value: '1' },
+						{ name: 'symbol', value: 'd4' + nag }
+					];
+					var result = parser.parse(tokens);
+					result.moves.should.have.length(1);
+					result.moves[0].should.have.property('piece', null);
+					result.moves[0].should.have.property('origin', null);
+					result.moves[0].should.have.property('capturing', false);
+					result.moves[0].should.have.property('target', 'd4');
+					result.moves[0].should.have.property('promotion', null);
+					result.moves[0].should.have.property('kingSideCastle', false);
+					result.moves[0].should.have.property('queenSideCastle', false);
+					result.moves[0].should.have.property('check', false);
+					result.moves[0].should.have.property('checkmate', false);
+					result.moves[0].should.have.property('nag', i + 1);
+				});
+			});
 		});
 
 		it('should handle consecutive moves', function() {
