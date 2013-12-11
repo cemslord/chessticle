@@ -229,6 +229,13 @@ Parser.prototype = {
 		}
 
 		next = tokens[i + 1];
+
+		if (next && next.name === 'commentary') {
+			result.move.commentary = next.value;
+			i++;
+			next = tokens[i + 1];
+		}
+
 		while (next && next.name === 'open-paren') {
 			var data = this.parseVariation(tokens, i + 1);
 			result.move.variations.push(data.variation);

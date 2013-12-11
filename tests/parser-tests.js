@@ -75,6 +75,34 @@ describe('Parser', function() {
 			result.moves[3].should.have.property('target', 'c6');
 		});
 
+		describe('commentary', function() {
+			it('should handle commentary before 1st move', function() {
+				var tokens = [
+					{ name: 'commentary', value: 'foo' },
+					{ name: 'integer', value: '1' },
+					{ name: 'periods', value: '.' },
+					{ name: 'symbol', value: 'd4' }
+				];
+				var result = parser.parse(tokens);
+				result.moves.should.have.length(1);
+				result.should.have.property('commentary', 'foo');
+				result.moves[0].should.have.property('target', 'd4');
+			});
+
+			it('should assign commentary after a move to previous move', function() {
+				var tokens = [
+					{ name: 'integer', value: '1' },
+					{ name: 'periods', value: '.' },
+					{ name: 'symbol', value: 'd4' },
+					{ name: 'commentary', value: 'foo' }
+				];
+				var result = parser.parse(tokens);
+				result.moves.should.have.length(1);
+				result.moves[0].should.have.property('target', 'd4');
+				result.moves[0].should.have.property('commentary', 'foo');
+			});
+		});
+
 		describe('pawn moves', function() {
 			it('should handle move', function() {
 				var tokens = [
@@ -710,6 +738,45 @@ describe('Parser', function() {
 			result.moves[0].variations.should.have.length(1);
 			result.moves[0].variations[0].moves.should.have.length(1);
 			result.moves[0].variations[0].moves[0].should.have.property('target', 'd3');
+		});
+
+		it('should handle variation with commentary before 1st move', function() {
+			var tokens = [
+				{ name: 'integer', value: '1' },
+				{ name: 'symbol', value: 'd4' },
+				{ name: 'open-paren' },
+				{ name: 'commentary', value: 'foo bar' },
+				{ name: 'integer', value: '1' },
+				{ name: 'symbol', value: 'd3' },
+				{ name: 'close-paren' }
+			];
+			var result = parser.parse(tokens);
+			result.moves.should.have.length(1);
+			result.moves[0].should.have.property('target', 'd4');
+			result.moves[0].variations.should.have.length(1);
+			result.moves[0].variations[0].commentary.should.equal('foo bar');
+			result.moves[0].variations[0].moves.should.have.length(1);
+			result.moves[0].variations[0].moves[0].should.have.property('target', 'd3');
+		});
+
+		it('should handle variation with commentary', function() {
+			var tokens = [
+				{ name: 'integer', value: '1' },
+				{ name: 'symbol', value: 'd4' },
+				{ name: 'open-paren' },
+				{ name: 'integer', value: '1' },
+				{ name: 'symbol', value: 'd3' },
+				{ name: 'commentary', value: 'foo bar' },
+				{ name: 'close-paren' }
+			];
+			var result = parser.parse(tokens);
+			result.moves.should.have.length(1);
+			result.moves[0].should.have.property('target', 'd4');
+			result.moves[0].variations.should.have.length(1);
+			result.moves[0].variations[0].commentary.should.equal('');
+			result.moves[0].variations[0].moves.should.have.length(1);
+			result.moves[0].variations[0].moves[0].should.have.property('target', 'd3');
+			result.moves[0].variations[0].moves[0].should.have.property('commentary', 'foo bar');
 		});
 
 		it('should handle variation with multiple moves', function() {
