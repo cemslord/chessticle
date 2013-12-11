@@ -128,11 +128,8 @@ Parser.prototype = {
 				case 'integer':
 					//movetext begins
 					noMoreTags = true;
-
-					result = this.parseHalfMove(tokens, i);
-					i = result.index;
-
-					data.moves.push(result.move);
+					break;
+				case 'periods':
 					break;
 				case 'open-paren':
 					//variation...
@@ -142,6 +139,9 @@ Parser.prototype = {
 						throw new Error('Unexpected token: ' + token.name);
 					}
 
+					result = this.parseHalfMove(tokens, i);
+					i = result.index;
+					data.moves.push(result.move);
 					break;
 				default:
 					throw new Error('Unrecognized token: ' + token.name);
@@ -156,25 +156,17 @@ Parser.prototype = {
 		var result = {
 			index: i,
 			move: {
-				number: Number(tokens[i].value),
 				san: null,
 				commentary: '',
-				color: 'white', //determined by number of periods after integer
 				variations: []
 			}
 		};
-		try {
-			this.ensureTokens(tokens, i, [ 'periods', 'symbol' ]);
-			result.move.san = tokens[i + 2].value;
-			result.move.color = tokens[i + 1].value.length > 1 ? 'black' : 'white';
-			i += 2;
-		} catch (e) {
-			this.ensureTokens(tokens, i, [ 'symbol' ]);
-			result.move.san = tokens[i + 1].value;
-			i++;
-		}
 
-		result.move.ply = (result.move.number * 2) - (result.color === 'white' ? 0 : 1);
+		var token = tokens[i];
+		if (!token || token.name !== 'symbol') {
+			throw new Error('Expected token "symbol"');
+		}
+		result.move.san = token.value;
 
 		//this probably totally works and is totally maintainable forever
 		var sanRegex = /^(?:([PNBRQK])?([a-h]|[1-8]|[a-h][1-8])?(x)?([a-h][1-8])(?:=([A-Z]))?|(^O-O(?:-O)?))(\+\+?|#)?$/,
@@ -201,7 +193,7 @@ Parser.prototype = {
 			!moveData.target &&
 			!moveData.kingSideCastle &&
 			!moveData.queenSideCastle) {
-			throw new Error('Half-move is not in standard algebraic notation: ' + result.move);
+			throw new Error('Half-move is not in standard algebraic notation: ' + result.move.san);
 		}
 
 		if (moveData.promotion) {
@@ -273,6 +265,15 @@ Parser.prototype = {
 				//variation is complete
 				closeParenFound = true;
 				break;
+			}
+
+			if (next.name !== 'integer') {
+				throw new Error('Expected token "integer"');
+			}
+
+			next = tokens[++i];
+			if (next && next.name === 'periods') {
+				next = tokens[++i];
 			}
 
 			var halfMove = this.parseHalfMove(tokens, i);

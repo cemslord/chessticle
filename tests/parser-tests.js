@@ -35,6 +35,46 @@ describe('Parser', function() {
 			result.moves[0].should.have.property('nag', 1);
 		});
 
+		it('should handle consecutive moves', function() {
+			var tokens = [
+				{ name: 'integer', value: '1' },
+				{ name: 'symbol', value: 'd4' },
+				{ name: 'symbol', value: 'd5' },
+				{ name: 'integer', value: '2' },
+				{ name: 'symbol', value: 'd3' },
+				{ name: 'symbol', value: 'c6' }
+			];
+			var result = parser.parse(tokens);
+			result.moves.should.have.length(4);
+			result.moves[0].should.have.property('target', 'd4');
+			result.moves[1].should.have.property('target', 'd5');
+			result.moves[2].should.have.property('target', 'd3');
+			result.moves[3].should.have.property('target', 'c6');
+		});
+
+		it('should handle consecutive moves with numbers', function() {
+			var tokens = [
+				{ name: 'integer', value: '1' },
+				{ name: 'periods', value: '.' },
+				{ name: 'symbol', value: 'd4' },
+				{ name: 'integer', value: '1' },
+				{ name: 'periods', value: '...' },
+				{ name: 'symbol', value: 'd5' },
+				{ name: 'integer', value: '2' },
+				{ name: 'periods', value: '.' },
+				{ name: 'symbol', value: 'd3' },
+				{ name: 'integer', value: '2' },
+				{ name: 'periods', value: '...' },
+				{ name: 'symbol', value: 'c6' }
+			];
+			var result = parser.parse(tokens);
+			result.moves.should.have.length(4);
+			result.moves[0].should.have.property('target', 'd4');
+			result.moves[1].should.have.property('target', 'd5');
+			result.moves[2].should.have.property('target', 'd3');
+			result.moves[3].should.have.property('target', 'c6');
+		});
+
 		describe('pawn moves', function() {
 			it('should handle move', function() {
 				var tokens = [
