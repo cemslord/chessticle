@@ -111,6 +111,7 @@ Parser.prototype = {
 					break;
 				case 'close-bracket':
 				case 'close-paren':
+				case 'open-paren':
 					//shouldn't ever encounter one of these that wasn't
 					//handled by the open-bracket/open-paren case
 					throw new Error('Unexpected token: ' + token.name);
@@ -128,9 +129,6 @@ Parser.prototype = {
 					break;
 				case 'periods':
 				case 'escape':
-					break;
-				case 'open-paren':
-					//variation...
 					break;
 				case 'symbol':
 					if (!noMoreTags) {
