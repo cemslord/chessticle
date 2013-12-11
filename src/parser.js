@@ -56,8 +56,15 @@
  *   PlyCount: integer
  */
 
-function Parser(lexer) {
+function merge(obj1, obj2) {
+	for (var key in obj2) {
+		obj1[key] = obj2[key];
+	}
+
+	return obj1;
 }
+
+function Parser() {}
 
 Parser.prototype = {
 	ensureToken: function(token, name, validator) {
@@ -65,7 +72,7 @@ Parser.prototype = {
 			throw new Error('Unexpected input termination: expected ' + name);
 		}
 		if (token.name !== name) {
-			throw new Error('Unexpected token: ' + token.type + ' (expected ' + name + ')');
+			throw new Error('Unexpected token: ' + token.name + ' (expected ' + name + ')');
 		}
 		if (validator && !validator(token.value)) {
 			throw new Error('Token value not valid');
@@ -86,10 +93,11 @@ Parser.prototype = {
 	parse: function(tokens) {
 		var data = {
 			metadata: {},
+			commentary: '',
 			moves: []
 		};
 
-		var token, i = -1, result, noMoreTags = false;
+		var token, i = -1, result, noMoreTags = false, firstMoveCommentary = null;
 		while (token = tokens[++i]) {
 			switch (token.name) {
 				case 'open-bracket':
@@ -99,7 +107,7 @@ Parser.prototype = {
 
 					result = this.parseTagPair(tokens, i);
 					data.metadata[result.name] = result.value;
-					i += result.unrolled;
+					i = result.index;
 					break;
 				case 'escape':
 					//meh, don't care about escaped stuff
@@ -110,19 +118,30 @@ Parser.prototype = {
 					//handled by the open-bracket/open-paren case
 					throw new Error('Unexpected token: ' + token.name);
 				case 'commentary':
-					break;
-				case 'integer':
-					if (!noMoreTags) {
-						//movetext begins
-						noMoreTags = true;
+					//this will only occur if there is commentary before white's first move
+					if (noMoreTags) {
+						throw new Error('Unexpected token: ' + token.name);
 					}
 
+					data.commentary += token.value;
+					break;
+				case 'integer':
+					//movetext begins
+					noMoreTags = true;
+
 					result = this.parseHalfMove(tokens, i);
-					i += result.unrolled;
-					data.moves.push(result.moveData);
+					i = result.index;
+
+					data.moves.push(result.move);
 					break;
 				case 'open-paren':
 					//variation...
+					break;
+				case 'symbol':
+					if (!noMoreTags) {
+						throw new Error('Unexpected token: ' + token.name);
+					}
+
 					break;
 				default:
 					throw new Error('Unrecognized token: ' + token.name);
@@ -135,24 +154,34 @@ Parser.prototype = {
 	parseHalfMove: function(tokens, i) {
 		//expect integer + periods + symbol OR integer + symbol
 		var result = {
-			unrolled: 2,
-			san: null
+			index: i,
+			move: {
+				number: Number(tokens[i].value),
+				san: null,
+				commentary: '',
+				color: 'white', //determined by number of periods after integer
+				variations: []
+			}
 		};
 		try {
 			this.ensureTokens(tokens, i, [ 'periods', 'symbol' ]);
-			result.san = tokens[i + 2].value;
+			result.move.san = tokens[i + 2].value;
+			result.move.color = tokens[i + 1].value.length > 1 ? 'black' : 'white';
+			i += 2;
 		} catch (e) {
 			this.ensureTokens(tokens, i, [ 'symbol' ]);
-			result.unrolled = 1;
-			result.san = tokens[i + 1].value;
+			result.move.san = tokens[i + 1].value;
+			i++;
 		}
+
+		result.move.ply = (result.move.number * 2) - (result.color === 'white' ? 0 : 1);
 
 		//this probably totally works and is totally maintainable forever
 		var sanRegex = /^(?:([PNBRQK])?([a-h]|[1-8]|[a-h][1-8])?(x)?([a-h][1-8])(?:=([A-Z]))?|(^O-O(?:-O)?))(\+\+?|#)?$/,
-			match = sanRegex.exec(result.san);
+			match = sanRegex.exec(result.move.san);
 
 		if (!match) {
-			throw new Error('Half-move is not in standard algebraic notation: ' + result.san);
+			throw new Error('Half-move is not in standard algebraic notation: ' + result.move.san);
 		}
 
 		var moveData = {
@@ -189,9 +218,76 @@ Parser.prototype = {
 		}
 
 		//TODO make sure it's not an illegal move
+		// - validate king doesn't move into check(mate)
+		// - validate absolute pins
+		// - validate move trajectory
+		// - validate move doesn't go to an occupied square without a capture
+		// - etc.
 
-		result.moveData = moveData;
+		merge(result.move, moveData);
+
+		//is there a NAG?
+		var next = tokens[i + 1];
+		if (next && next.name === 'nag') {
+			result.move.nag = Number(next.value);
+			if (result.move.nag > 255) {
+				throw new Error('Invalid NAG value: ' + result.move.nag);
+			}
+			i++;
+		}
+
+		next = tokens[i + 1];
+		while (next && next.name === 'open-paren') {
+			var data = this.parseVariation(tokens, i + 1);
+			result.move.variations.push(data.variation);
+			i = data.index;
+			next = tokens[i + 1];
+		}
+
+		result.index = i;
 		return result;
+	},
+
+	parseVariation: function(tokens, i) {
+		var variation = {
+			commentary: '',
+			moves: []
+		};
+		var next = tokens[i + 1];
+		if (!next || (next.name !== 'integer' && next.name !== 'commentary')) {
+			throw new Error('Expected token "integer" or "commentary"');
+		}
+
+		if (next.name === 'commentary') {
+			variation.commentary = next.value;
+			i++;
+			next = tokens[i + 1];
+			if (!next || next.name !== 'integer') {
+				throw new Error('Expected token "integer"');
+			}
+		}
+
+		var closeParenFound = false;
+		while (next = tokens[++i]) {
+			if (next.name === 'close-paren') {
+				//variation is complete
+				closeParenFound = true;
+				break;
+			}
+
+			var halfMove = this.parseHalfMove(tokens, i);
+			i = halfMove.index;
+			variation.moves.push(halfMove.move);
+		}
+
+		if (!closeParenFound) {
+			throw new Error('Expected token "close-paren"');
+		}
+
+		return {
+			index: i,
+			variation: variation
+		};
 	},
 
 	parseTagPair: function(tokens, i) {
@@ -204,10 +300,6 @@ Parser.prototype = {
 			value: tokens[i + 2].value
 		};
 	}
-};
-
-Parser.parse = function(input) {
-	return new Parser().parse(input);
 };
 
 module.exports = Parser;

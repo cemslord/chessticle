@@ -15,6 +15,26 @@ describe('Parser', function() {
 	});
 
 	describe('movetext', function() {
+		it('should handle nag after move', function() {
+			var tokens = [
+				{ name: 'integer', value: '1' },
+				{ name: 'symbol', value: 'd4' },
+				{ name: 'nag', value: '1' }
+			];
+			var result = parser.parse(tokens);
+			result.moves.should.have.length(1);
+			result.moves[0].should.have.property('piece', null);
+			result.moves[0].should.have.property('origin', null);
+			result.moves[0].should.have.property('capturing', false);
+			result.moves[0].should.have.property('target', 'd4');
+			result.moves[0].should.have.property('promotion', null);
+			result.moves[0].should.have.property('kingSideCastle', false);
+			result.moves[0].should.have.property('queenSideCastle', false);
+			result.moves[0].should.have.property('check', false);
+			result.moves[0].should.have.property('checkmate', false);
+			result.moves[0].should.have.property('nag', 1);
+		});
+
 		describe('pawn moves', function() {
 			it('should handle move', function() {
 				var tokens = [
@@ -631,6 +651,68 @@ describe('Parser', function() {
 				];
 				(function() { parser.parse(tokens); }).should.throwError('Kings cannot give checkmate');
 			});
+		});
+	});
+
+	describe('variations', function() {
+		it('should handle single variation', function() {
+			var tokens = [
+				{ name: 'integer', value: '1' },
+				{ name: 'symbol', value: 'd4' },
+				{ name: 'open-paren' },
+				{ name: 'integer', value: '1' },
+				{ name: 'symbol', value: 'd3' },
+				{ name: 'close-paren' }
+			];
+			var result = parser.parse(tokens);
+			result.moves.should.have.length(1);
+			result.moves[0].should.have.property('target', 'd4');
+			result.moves[0].variations.should.have.length(1);
+			result.moves[0].variations[0].moves.should.have.length(1);
+			result.moves[0].variations[0].moves[0].should.have.property('target', 'd3');
+		});
+
+		it.skip('should handle nested variations', function() {});
+
+		it('should handle multiple variations', function() {
+			var tokens = [
+				{ name: 'integer', value: '1' },
+				{ name: 'symbol', value: 'd4' },
+				{ name: 'open-paren' },
+				{ name: 'integer', value: '1' },
+				{ name: 'symbol', value: 'd3' },
+				{ name: 'close-paren' },
+				{ name: 'open-paren' },
+				{ name: 'integer', value: '1' },
+				{ name: 'symbol', value: 'Nf3' },
+				{ name: 'close-paren' }
+			];
+			var result = parser.parse(tokens);
+			result.moves.should.have.length(1);
+			result.moves[0].should.have.property('target', 'd4');
+			result.moves[0].variations.should.have.length(2);
+			result.moves[0].variations[0].moves.should.have.length(1);
+			result.moves[0].variations[0].moves[0].should.have.property('target', 'd3');
+			result.moves[0].variations[1].moves.should.have.length(1);
+			result.moves[0].variations[1].moves[0].should.have.property('target', 'f3');
+		});
+
+		it.skip('should handle variation with multiple moves', function() {
+			var tokens = [
+				{ name: 'integer', value: '1' },
+				{ name: 'symbol', value: 'd4' },
+				{ name: 'open-paren' },
+				{ name: 'integer', value: '1' },
+				{ name: 'symbol', value: 'd3' },
+				{ name: 'symbol', value: 'Nf6' },
+				{ name: 'close-paren' }
+			];
+			var result = parser.parse(tokens);
+			result.moves.should.have.length(1);
+			result.moves[0].should.have.property('target', 'd4');
+			result.moves[0].variations.should.have.length(1);
+			result.moves[0].variations[0].moves.should.have.length(1);
+			result.moves[0].variations[0].moves[0].should.have.property('target', 'd3');
 		});
 	});
 
