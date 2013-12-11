@@ -14,6 +14,22 @@ describe('Parser', function() {
 		result.metadata.should.have.property('Foo', 'bar');
 	});
 
+	it('should handle multiple tag pairs', function() {
+		var tokens = [
+			{ name: 'open-bracket' },
+			{ name: 'symbol', value: 'Foo' },
+			{ name: 'string', value: 'bar' },
+			{ name: 'close-bracket' },
+			{ name: 'open-bracket' },
+			{ name: 'symbol', value: 'Foo2' },
+			{ name: 'string', value: 'bar2' },
+			{ name: 'close-bracket' }
+		];
+		var result = parser.parse(tokens);
+		result.metadata.should.have.property('Foo', 'bar');
+		result.metadata.should.have.property('Foo2', 'bar2');
+	});
+
 	it('should ignore escaped text', function() {
 		var tokens = [
 			{ name: 'escape', value: 'asdf' }

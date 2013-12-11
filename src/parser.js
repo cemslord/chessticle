@@ -294,7 +294,7 @@ Parser.prototype = {
 		this.ensureTokens(tokens, i, [ 'symbol', 'string', 'close-bracket' ]);
 
 		return {
-			unrolled: 3,
+			index: i + 3,
 			name: tokens[i + 1].value,
 			value: tokens[i + 2].value
 		};
