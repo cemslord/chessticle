@@ -161,6 +161,13 @@ describe('Lexer', function() {
 		tokens[0].should.have.property('value', '23489');
 	});
 
+	it('should handle draws', function() {
+		var tokens = lexer.lex('1/2-1/2');
+		tokens.should.have.length(1);
+		tokens[0].should.have.property('name', 'symbol');
+		tokens[0].should.have.property('value', '1/2-1/2');
+	});
+
 	it('should blow up on invalid NAG', function() {
 		(function() { lexer.lex('$foo'); }).should.throwError('Expected numeric annotation glyph at 0');
 	});
