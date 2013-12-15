@@ -8,15 +8,13 @@
 		this.imageCss = this.imageSet.replace(/\./g, '-') + '_' + this.imageSize;
 		this.data = null;
 		this.startingPosition = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-
-		if (!this.input) {
-			throw new Error('"fen" or "pgn" input is required');
-		}
+		this.currentPly = -1;
 	}
 
 	Chessticle.prototype = {
 		parseFen: function(fen) {
-			return fen.split(' ')[0].split('/').map(function(rank) {
+			var fenParts = fen.split(' ');
+			var board = fenParts[0].split('/').map(function(rank) {
 				var chars = rank.split(''),
 					files = [];
 				for (var i = 0; i < chars.length; i++) {
@@ -36,6 +34,19 @@
 
 				return files;
 			});
+
+			return {
+				fen: fen,
+				board: board,
+				toMove: fenParts[1],
+				wKingSideCastle: fenParts[2].indexOf('K') !== -1,
+				wQueenSideCastle: fenParts[2].indexOf('Q') !== -1,
+				bKingSideCastle: fenParts[2].indexOf('k') !== -1,
+				bQueenSideCastle: fenParts[2].indexOf('q') !== -1,
+				enPassantTarget: fenParts[3] !== '-' ? fenParts[3] : null,
+				halfmoveClock: Number(fenParts[4]),
+				moveNumber: Number(fenParts[5])
+			};
 		},
 
 		render: function() {
@@ -54,7 +65,7 @@
 			var $title = $('<div/>').addClass('chessticle-title');
 			var $boardContainer = $('<div/>').addClass('chessticle-board-container');
 			var $board = $('<table/>').addClass('chessticle-board').addClass('chessticle-board-' + this.imageCss);
-			var $moveControls = $('<div/>').addClass('chessticle-move-controls');
+			var $moveControls = $('<ul/>').addClass('chessticle-move-controls');
 
 			var ranks = [ 1, 2, 3, 4, 5, 6, 7, 8 ],
 				files = [ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' ];
@@ -81,12 +92,112 @@
 				$board.append($tr);
 			}
 
-			$boardContainer.append($board, $moveControls);
+			$('<li/>').addClass('chessticle-prev').click($.proxy(this.previousMove, this)).appendTo($moveControls);
+			$('<li/>').addClass('chessticle-next').click($.proxy(this.nextMove, this)).appendTo($moveControls);
 
-			$container
-				.append($title, $boardContainer);
+			$boardContainer.append($board, $moveControls);
+			$container.append($title, $boardContainer);
 
 			this.$element.append($container);
+		},
+
+		validateMove: function(origin, piece, target) {
+			switch (piece) {
+				case 'p':
+					break;
+				case 'n':
+					break;
+				case 'b':
+					break;
+				case 'r':
+					break;
+				case 'q':
+					break;
+				case 'k':
+					break;
+			}
+		},
+
+		findOriginForMove: function(move) {
+			//TODO account for FEN starting positions
+			var color = !!(this.currentPly % 2) ? 'b' : 'w',
+				self = this,
+				piece = color + (move.piece || 'p').toLowerCase(),
+				rank = null,
+				file = null,
+				$board = this.$element.find('.chessticle-board'),
+				$target = $board.find('td[data-square="' + move.target + '"]'),
+				$squares = $();
+
+			if (!$target.length) {
+				//wat?
+				throw new Error('Invalid target');
+			}
+
+			if (move.origin) {
+				rank = (/\d/.exec(move.origin) || [])[0];
+				file = (/[a-h]/.exec(move.origin) || [])[0];
+			}
+
+			if (rank && file) {
+				$squares = $board.find('td[data-square="' + file + rank + '"]');
+			} else if (rank) {
+				$squares = $board.find('td[data-square*="' + rank + '"]');
+			} else if (file) {
+				$squares = $board.find('td[data-square*="' + file + '"]');
+			} else {
+				//search the entire board
+				$squares = $board.find('td[data-square]');
+			}
+
+			$squares = $squares
+				.filter(function() {
+					//make sure the piece that's trying to move actually exists on the square
+					return $(this).find('[class$="' + piece + '"]').length;
+				});
+
+			switch ($squares.length) {
+				case 1: return $squares;
+				case 0: return $();
+				default:
+					//more than one possible piece, so see which one can actually move
+					//to the target
+					return $squares.filter(function() {
+						return self.validateMove($(this).data('square'), piece, move.target);
+					});
+					break;
+			}
+		},
+
+		nextMove: function() {
+			if (this.currentPly === this.data.moves.length) {
+				return;
+			}
+
+			var move = this.data.moves[++this.currentPly];
+			if (move.result) {
+				return;
+			}
+
+			if (move.kingSideCastle) {
+
+			} else if (move.queenSideCastle) {
+
+			} else {
+				var $origin = this.findOriginForMove(move);
+				if (!$origin.length) {
+					throw new Error('Invalid move');
+				}
+			}
+		},
+
+		previousMove: function() {
+			if (this.currentPly <= 0) {
+				return;
+			}
+
+			var move = this.data.moves[--this.currentPly];
+			console.log(move);
 		},
 
 		destroy: function() {

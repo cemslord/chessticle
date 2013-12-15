@@ -1,5 +1,9 @@
-.chessticle {
-	font-family: Arial, sans-serif;
+.chessticle-container {
+	float: left;
+	&:after {
+		content: "";
+		display: block;
+	}
 }
 .chessticle-board {
 	border-collapse: separate;
@@ -18,6 +22,32 @@
 			position: absolute;
 			top: 0;
 			left: 0;
+		}
+	}
+}
+
+.chessticle-move-controls {
+	padding: 0;
+	margin: 0 auto;
+	width: -moz-fit-content;
+	width: fit-content;
+	list-style: none;
+	li {
+		width: 20px;
+		height: 20px;
+		float: left;
+		cursor: pointer;
+		font-weight: bold;
+		text-align: center;
+		&.chessticle-next {
+			&:after {
+				content: ">";
+			}
+		}
+		&.chessticle-prev {
+			&:after {
+				content: "<";
+			}
 		}
 	}
 }
